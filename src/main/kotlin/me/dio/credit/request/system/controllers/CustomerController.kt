@@ -1,5 +1,6 @@
 package me.dio.credit.request.system.controllers
 
+import jakarta.validation.Valid
 import me.dio.credit.request.system.dto.CustomerDTO
 import me.dio.credit.request.system.dto.CustomerUpdateDTO
 import me.dio.credit.request.system.dto.CustomerView
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -28,7 +30,7 @@ class CustomerController(
 ) {
 
     @PostMapping
-    fun saveCustomer(@RequestBody customerDTO: CustomerDTO): ResponseEntity<String>{
+    fun saveCustomer(@RequestBody @Valid customerDTO: CustomerDTO): ResponseEntity<String>{
         val savedCustomer = this.customerService.save(customerDTO.toEntity())
         return ResponseEntity.status(HttpStatus.CREATED).body("Customer ${savedCustomer.email} saved!")
     }
@@ -38,12 +40,13 @@ class CustomerController(
         return ResponseEntity.status(HttpStatus.OK).body(CustomerView(customer))
     }
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteCustomer(@PathVariable id: Long){
         this.customerService.delete(id)
     }
     @PatchMapping
     fun updateCustomer(@RequestParam(value = "customerId") id: Long,
-                       @RequestBody customerUpdateDTO: CustomerUpdateDTO): ResponseEntity<CustomerView>{
+                       @RequestBody @Valid customerUpdateDTO: CustomerUpdateDTO): ResponseEntity<CustomerView>{
         val customer: Customer = this.customerService.findById(id)
         val customerToUpdate = customerUpdateDTO.toEntity(customer)
         val customerUpdated: Customer = this.customerService.save(customerToUpdate)
